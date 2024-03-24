@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+cd "$(dirname "$0")"
+
+# shellcheck disable=SC2124
+readonly name=${@:?"mssing argument!    usage: create-migration MIGRATION NAME"}
+
+timestamp=$(date +%s)
+slug="$(echo "${name}" | tr "A-Z- " "a-z__" | tr -cd "a-z0-9_")"
+name="${timestamp}_${slug}"
+up_file="${name}.up.sql"
+down_file="${name}.down.sql"
+
+[[ -f "${up_file}" ]] && ( echo "File ${up_file} already exists"; exit 1 )
+[[ -f "${down_file}" ]] && ( echo "File ${down_file} already exists"; exit 1 )
+
+touch "${up_file}" "${down_file}"
+echo "${name}" > latest.lock
+echo "${up_file}"
